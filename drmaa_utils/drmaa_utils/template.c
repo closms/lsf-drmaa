@@ -64,8 +64,12 @@ fsd_template_set_attr( fsd_template_t *self,
 				FSD_ERRNO_INVALID_ARGUMENT,
 				"invalid scalar attribute name: %s", name
 				);
-	if( value != NULL )
+	if( value != NULL ) {
+		if (self->attributes[ attr->code ] != NULL) {
+			fsd_free( self->attributes[ attr->code ] );
+		}
 		self->attributes[ attr->code ] = fsd_strdup( value );
+        }
 	else
 		self->attributes[ attr->code ] = NULL;
 }

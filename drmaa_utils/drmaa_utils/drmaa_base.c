@@ -171,8 +171,25 @@ drmaa_set_attribute(
 	fsd_template_t *jt = (fsd_template_t*)drmaa_jt;
 	fsd_log_enter(( "(jt=%p, name='%s', value='%s')",
 				(void*)drmaa_jt, name, value ));
-	if( jt != NULL  &&  name != NULL )
+	if( jt != NULL  &&  name != NULL ) {
+		if (strcmp(name, "drmaa_native_specification") == 0
+				&& jt->get_attr( jt, name ) != NULL
+				&& value != NULL) {
+			/** hack.  support multiple native specs by concatenating them together.
+			 */
+			const char *oldval = jt->get_attr( jt, name );
+			char *newval;
+			int newlen;
+			newlen = strlen(oldval) + strlen(value) + 2;
+			newval = malloc(newlen);
+			strcpy(newval, oldval);
+			strcat(newval, " ");
+			strcat(newval, value);
+			fsd_free((char *)value); /* i hope this doesn't come back to haunt me. */
+			value = newval;
+		}
 		jt->set_attr( jt, name, value );
+        }
 	else
 		fsd_exc_raise_code( FSD_ERRNO_INVALID_ARGUMENT );
 	fsd_log_return(( " =0" ));
